@@ -1,0 +1,84 @@
+# nifty-spot-collector -- Docker.
+#
+# Setup, once:
+#   cp .env.example .env
+#   # edit .env: fill in UPSTOX_CLIENT_ID / UPSTOX_CLIENT_SECRET / UPSTOX_REDIRECT_URI
+#   docker compose build
+#
+# Day to day:
+#   docker compose run --rm collector python -m src.cli auth
+#   docker compose run --rm collector python -m src.cli collect --from 2026-06-01 --to 2026-06-30
+#   docker compose run --rm collector python -m src.cli chart --from 2026-06-01 --to 2026-06-30 --out /data/chart.svg
+#
+#   docker compose up
+#     -- builds (if needed) and runs verify.sh once, then exits. This is
+#     "the one command Docker promises": it proves dependencies, tzdata,
+#     config and the database are all reachable, without needing dates,
+#     a token, or any argument from you. It will legitimately report the
+#     token as missing until you've run `auth` at least once -- that's
+#     verify.sh doing its job, not this command failing.
+#
+#     verify.sh's own exit code contract (see its header) has FOUR values,
+#     and one of them -- 3, "configured correctly, no token yet" -- is the
+#     state every fresh build starts in and every user re-enters each
+#     morning once the token expires. Left as verify.sh's raw exit code,
+#     `command:` below would make THAT normal state look like a failed
+#     `docker compose up` (any nonzero container exit reads as a failure to
+#     Compose and to anyone glancing at it), which is exactly the "any SKIP
+#     is a failure" mistake this design was trying to avoid, just moved from
+#     the SKIP tag to the exit code. The wrapper below maps verify.sh's exit
+#     3 to a successful (0) container exit; exit 1 (something's broken) and
+#     exit 2 (verify.sh couldn't start) still fail the build, as they should.
+#
+# `docker compose run` (not `up`) for collect/chart/auth because they're a
+# CLI with subcommands and arguments that change every time you run them,
+# not a long-running service -- `up` runs one fixed command per service.
+#
+# `chart`'s --out must be a path INSIDE /data (the mounted volume) if you
+# want the rendered file to land somewhere you can find it back on the host
+# via `docker cp`, or add a third bind mount for an output directory
+# yourself. It is not wired up here by default because that's exactly the
+# kind of host-path assumption (drive letters, permissions, line endings)
+# this file is trying to avoid making on your behalf.
+
+services:
+  collector:
+    build: .
+    image: nifty-spot-collector:latest
+    env_file:
+      - .env
+    environment:
+      # Fixed, not read from .env: this is a path INSIDE the container,
+      # pointing at the named volume below. Overriding SPOT_DB_PATH in .env
+      # has no effect here (see .env.example) -- that variable is for the
+      # native install, where there is no volume to fix it to.
+      SPOT_DB_PATH: /data/spot.db
+    volumes:
+      # Named volumes, not bind mounts to a host path. A bind mount written
+      # as `~/nifty-data:/data` or `${HOME}/nifty-data:/data` behaves
+      # differently on macOS, Linux and Windows (drive letters, WSL2 path
+      # translation, whether `~` even expands the way you'd expect) -- named
+      # volumes are engine-managed storage with no host path in the picture
+      # at all, so this file behaves identically on all three.
+      - nifty_data:/data
+      # Matches CREDENTIALS_PATH's directory in src/upstox/session.py
+      # (~/.config/nifty-spot-collector/, under the fixed HOME the
+      # Dockerfile sets) -- so the token `auth` saves survives a
+      # `docker compose down` / rebuild instead of vanishing with the
+      # container's writable layer.
+      - nifty_credentials:/home/collector/.config/nifty-spot-collector
+    # $$ (not $), twice, both places: Compose interpolates $VAR itself
+    # against the *host's* environment/.env before this string ever
+    # reaches the container -- a bare $ec here silently became Compose's
+    # own undefined-variable substitution (blank string), not the
+    # container shell's `ec=$?` at all, so the exit-3 comparison below was
+    # always `[ "" = 3 ]` -- always false, the mapping never fired. $$
+    # is Compose's documented escape for "pass this dollar sign through
+    # literally". Confirmed broken 2026-08-09 by the
+    # `The "ec" variable is not set` warning Compose printed on every
+    # invocation, including ones that never execute this command at all.
+    command: ["sh", "-c", "./verify.sh; ec=$$?; if [ \"$$ec\" = 3 ]; then exit 0; fi; exit \"$$ec\""]
+
+volumes:
+  nifty_data:
+  nifty_credentials:

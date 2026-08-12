@@ -1,0 +1,7 @@
+# Force LF line endings on shell scripts regardless of the cloning
+# platform's line-ending settings. Without this, a Windows clone with
+# git's default `core.autocrlf` behaviour can check these out with CRLF
+# endings, and setup.sh -- the first thing the quickstart tells a new
+# user to run -- fails immediately with `bad interpreter: /bin/bash^M`,
+# on exactly the platform this project most needs to prove it works on.
+*.sh text eol=lf

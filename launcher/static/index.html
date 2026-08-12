@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nifty-spot-collector launcher</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div id="token-banner" class="token-banner">Checking token status&hellip;</div>
+
+<header class="page-header">
+  <h1>nifty-spot-collector</h1>
+  <p class="subtitle">A local control panel for the <code>nifty-spot</code> CLI. Every action here runs the same
+    commands you'd type yourself &mdash; shown before they run, streamed live while they run.</p>
+</header>
+
+<main>
+
+  <!-- ============================== STATUS ============================== -->
+  <section id="card-status" class="card">
+    <h2>Status</h2>
+    <div id="status-tiles" class="tiles">Loading&hellip;</div>
+    <button type="button" id="btn-refresh-status">Refresh status</button>
+    <details class="raw-output-details">
+      <summary>Raw <code>./verify.sh</code> output</summary>
+      <pre id="status-raw"></pre>
+    </details>
+  </section>
+
+  <!-- ========================= INSTALL DEPENDENCIES ======================= -->
+  <section id="card-install" class="card">
+    <h2>1. Install dependencies</h2>
+    <p class="help">Creates a Python virtual environment in <code>.venv/</code> and installs this repo's pinned
+      dependencies into it. Never touches anything outside this repository.</p>
+    <button type="button" id="btn-run-setup">Run <code>./setup.sh</code></button>
+    <pre id="install-output" class="stream-output" hidden></pre>
+  </section>
+
+  <!-- ============================= CREDENTIALS ============================ -->
+  <section id="card-credentials" class="card">
+    <h2>2. Credentials</h2>
+    <p class="help">Every label below uses your broker's own wording, taken from their dashboard &mdash; not
+      this project's. <strong>Upstox is the only broker supported in this build</strong>, so these are Upstox's
+      labels. <a href="https://developer.upstox.com" target="_blank" rel="noopener">Open the Upstox developer
+      dashboard &rarr;</a></p>
+
+    <form id="form-credentials">
+      <div class="field" data-key="SPOT_DB_PATH">
+        <label for="f-SPOT_DB_PATH">Database file location</label>
+        <p class="help">Not a broker setting &mdash; where <em>this tool</em> stores collected data on your own
+          computer, as a SQLite file. Doesn't need to exist yet.</p>
+        <p class="envvar">Stored as <code>SPOT_DB_PATH</code></p>
+        <div class="input-row">
+          <input type="text" id="f-SPOT_DB_PATH" autocomplete="off" spellcheck="false" placeholder="/absolute/path/to/spot.db">
+        </div>
+        <p class="conflict-warning" hidden></p>
+      </div>
+
+      <div class="field" data-key="UPSTOX_CLIENT_ID" data-secret="true">
+        <label for="f-UPSTOX_CLIENT_ID">API Key</label>
+        <p class="help">Upstox calls this <strong>API Key</strong> on your app's page
+          (Apps &rarr; Algo Trading &rarr; expand your app's row).</p>
+        <p class="envvar">Stored as <code>UPSTOX_CLIENT_ID</code></p>
+        <div class="input-row">
+          <input type="password" id="f-UPSTOX_CLIENT_ID" autocomplete="off" spellcheck="false">
+          <button type="button" class="reveal-toggle" data-target="f-UPSTOX_CLIENT_ID">Show</button>
+        </div>
+        <p class="conflict-warning" hidden></p>
+      </div>
+
+      <div class="field" data-key="UPSTOX_CLIENT_SECRET" data-secret="true">
+        <label for="f-UPSTOX_CLIENT_SECRET">API Secret</label>
+        <p class="help">Same expandable row as API Key, shown masked on Upstox's own dashboard with a reveal
+          icon. Treat it like a password.</p>
+        <p class="envvar">Stored as <code>UPSTOX_CLIENT_SECRET</code></p>
+        <div class="input-row">
+          <input type="password" id="f-UPSTOX_CLIENT_SECRET" autocomplete="off" spellcheck="false">
+          <button type="button" class="reveal-toggle" data-target="f-UPSTOX_CLIENT_SECRET">Show</button>
+        </div>
+        <p class="conflict-warning" hidden></p>
+      </div>
+
+      <div class="field" data-key="UPSTOX_REDIRECT_URI">
+        <label for="f-UPSTOX_REDIRECT_URI">Redirect URL</label>
+        <p class="help">Set on your app's <strong>Edit app</strong> page, must match character-for-character.
+          For the automatic Connect flow below to work, register
+          <code id="redirect-uri-hint">http://127.0.0.1:8765/callback</code> exactly.
+          <strong>Changing this launcher's port means re-registering this value on your broker's dashboard too.</strong></p>
+        <p class="envvar">Stored as <code>UPSTOX_REDIRECT_URI</code></p>
+        <div class="input-row">
+          <input type="text" id="f-UPSTOX_REDIRECT_URI" autocomplete="off" spellcheck="false">
+        </div>
+        <p class="conflict-warning" hidden></p>
+      </div>
+
+      <button type="submit" id="btn-save-credentials">Save to .env</button>
+    </form>
+
+    <details class="raw-output-details">
+      <summary>.env file contents</summary>
+      <p class="envvar">Path: <code id="env-path"></code></p>
+      <pre id="env-raw"></pre>
+    </details>
+  </section>
+
+  <!-- =============================== CONNECT =============================== -->
+  <section id="card-connect" class="card">
+    <h2>3. Connect</h2>
+    <p id="connect-token-status" class="help"></p>
+
+    <div class="connect-options">
+      <div class="connect-option">
+        <h3>Connect with your broker</h3>
+        <p class="help">Opens Upstox's login page in a new tab. After you log in, it redirects back here
+          automatically &mdash; no copying a code out of the address bar.</p>
+        <p class="help">Register this exact redirect URL on your broker's dashboard first:
+          <code id="connect-redirect-uri"></code>
+          <button type="button" id="btn-copy-redirect-uri">Copy</button></p>
+        <a id="link-oauth-login" class="button-link" href="#" target="_blank" rel="noopener">Log in to Upstox</a>
+        <p class="help small">This link contains your Client ID (API Key) in plain text &mdash; visible in the
+          browser's address bar whenever it's on screen. See docs/LAUNCHER.md.</p>
+        <pre id="oauth-output" class="stream-output" hidden></pre>
+      </div>
+
+      <div class="connect-option">
+        <h3>Paste a token</h3>
+        <p class="help">Upstox's dashboard (same expandable row as API Key) also shows an
+          <strong>Access Token</strong> field marked "Generated By You" &mdash; regenerated fresh each morning.
+          Pasting it here is equally valid and is often the faster daily habit once you're set up.</p>
+        <p class="envvar">Stored as <code>UPSTOX_ACCESS_TOKEN</code></p>
+        <div class="input-row">
+          <input type="password" id="f-paste-token" autocomplete="off" spellcheck="false" placeholder="eyJ...">
+          <button type="button" class="reveal-toggle" data-target="f-paste-token">Show</button>
+        </div>
+        <button type="button" id="btn-save-token">Save token</button>
+        <p id="paste-token-error" class="error" hidden></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================== COLLECT =============================== -->
+  <section id="card-collect" class="card">
+    <h2>4. Collect</h2>
+    <p id="collect-token-warning" class="warning" hidden></p>
+    <form id="form-collect">
+      <label>From <input type="date" id="f-from-date"></label>
+      <label>To <input type="date" id="f-to-date"></label>
+      <button type="submit" id="btn-run-collect">Run collect &amp; chart</button>
+    </form>
+    <pre id="collect-output" class="stream-output" hidden></pre>
+
+    <div id="chart-result" hidden>
+      <h3>Chart</h3>
+      <p class="envvar">File: <code id="chart-path"></code>
+        <a id="chart-download" href="/api/chart-file" download>Download</a></p>
+      <img id="chart-image" src="" alt="Rendered chart" style="max-width: 100%;">
+    </div>
+  </section>
+
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

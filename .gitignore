@@ -1,0 +1,39 @@
+# Secrets. Never commit the real .env -- .env.example (checked in) is the
+# only one that belongs in git; it holds named placeholders, not values.
+.env
+
+# Credentials this repo's own code writes at runtime (src/upstox/session.py
+# CREDENTIALS_PATH), in case a native install's config dir ever ends up
+# inside a checkout instead of $HOME.
+upstox_credentials.json
+
+# Native install. Created by setup.sh; installs pinned
+# dependencies from requirements.txt, never something to commit.
+.venv/
+
+# Python bytecode / caches -- regenerated on every run.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# The database this repo's own code creates (SPOT_DB_PATH, or the default
+# quickstart path used in README examples) -- real market data, and the
+# whole point of this repo is that it never ships any. WAL/SHM are SQLite's
+# own auxiliary files alongside the main database file (see
+# src/db/connection.py's WAL-mode connection factory) and must be ignored
+# together with it -- a .db without its live .db-wal is not a consistent
+# snapshot.
+*.db
+*.db-wal
+*.db-shm
+
+# Rendered chart output (src/render/chart.py::render_candles, the `chart`
+# CLI command's --out). Generated from whatever's in the local database;
+# never something to check in. If this repo ever legitimately ships a real
+# image (a docs illustration, say), add it with `git add -f`.
+*.svg
+*.png
+
+# Internal QA/handoff notes -- useful locally, not for publication.
+HANDOFF.md
