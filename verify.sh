@@ -29,10 +29,24 @@
 #       path treats this as a successful `docker compose up`, not a failed
 #       build.
 #
-# Usage: ./verify.sh
+# Usage: ./verify.sh [--online]
+#
+# Network checks are opt-in (D-122). "Historical API reachable" is the only
+# check that makes a live call, and it used to fire unprompted whenever a
+# token was present -- which is every time this script runs on camera right
+# after the operator's daily token refresh. Off by default now; pass
+# --online or set VERIFY_ALLOW_NETWORK=1 to run it.
 set -u
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Default OFF, never default-on -- see the header above and D-122.
+ALLOW_NETWORK="${VERIFY_ALLOW_NETWORK:-0}"
+for _arg in "$@"; do
+    case "$_arg" in
+        --online) ALLOW_NETWORK=1 ;;
+    esac
+done
 
 # Prefer the native install's virtualenv if one exists; otherwise fall back
 # to whatever Python 3 is on PATH (the Docker image, where dependencies are
@@ -79,7 +93,7 @@ echo "============================"
 echo "Using interpreter: ${PY}"
 echo
 
-NIFTY_VERIFY_REPO_DIR="$REPO_DIR" "$PY" - <<'PYEOF'
+NIFTY_VERIFY_REPO_DIR="$REPO_DIR" NIFTY_VERIFY_ALLOW_NETWORK="$ALLOW_NETWORK" "$PY" - <<'PYEOF'
 import os
 import platform
 import sys
@@ -88,6 +102,10 @@ from datetime import datetime
 
 REPO_DIR = os.environ.get("NIFTY_VERIFY_REPO_DIR", ".")
 sys.path.insert(0, REPO_DIR)
+
+# Opt-in gate for the one network call in this script (D-122). Set by the
+# bash wrapper above from VERIFY_ALLOW_NETWORK / --online; defaults off.
+ALLOW_NETWORK = os.environ.get("NIFTY_VERIFY_ALLOW_NETWORK", "0") == "1"
 
 results = []  # (status, label, detail) -- status in OK/FAIL/SKIP
 
@@ -195,10 +213,13 @@ check(
     "all set" if app_creds_present else "one or more unset -- only `auth` needs these",
 )
 
-# 5. Historical API reachable -- a REAL, live call, only if a token exists.
-# This is the only check here that touches the network. It makes one
-# read-only historical request for a fixed past date and writes nothing to
-# your database.
+# 5. Historical API reachable -- a REAL, live call, only if a token exists
+# AND network checks are opted in (VERIFY_ALLOW_NETWORK=1 or --online; off
+# by default, D-122). This is the only check here that touches the network.
+# It makes one read-only historical request for a fixed past date and
+# writes nothing to your database. It used to run unprompted whenever a
+# token was present -- on camera, right after a fresh token, that fired a
+# live authenticated-shaped call in the middle of a recording. Opt-in now.
 #
 # NOT called "Token accepted by Upstox" (what it was originally, and what
 # it still sounds like it should prove) because it doesn't, and confirming
@@ -220,13 +241,18 @@ check(
 # shape check catches obvious paste mistakes and because that requirement
 # costs nothing to keep even where it isn't strictly enforced server-side.
 PROBE_DATE = "2026-06-01"  # a known NSE trading day, safely in the past
-if token:
+if not ALLOW_NETWORK:
+    check("SKIP", "Historical API reachable",
+          "SKIPPED -- network checks are opt-in (set VERIFY_ALLOW_NETWORK=1 or --online)")
+elif token:
     try:
         from src.upstox.adapter import UpstoxSpotAdapter
         from src.upstox.instruments import resolve_index
 
         adapter = UpstoxSpotAdapter()
         instrument_key = resolve_index("NIFTY")
+        # verify-network-ok: the one live call this script ever makes,
+        # reached only when ALLOW_NETWORK is explicitly on (D-122).
         bars = adapter.fetch_spot_bars("NIFTY", instrument_key, PROBE_DATE, PROBE_DATE)
         check("OK", "Historical API reachable", f"call for {PROBE_DATE} succeeded, {len(bars)} bar(s) -- does not confirm token validity, see comment above")
     except RuntimeError as exc:
