@@ -55,6 +55,33 @@ renders them as a candlestick chart. Two things, nothing else.
    and watching a file appear where the diagnostic had just said "does not
    exist yet". Don't reintroduce it in a new module.
 
+   **This invariant was written on the day this repo was published and the
+   connection factory broke it anyway.** `src/db/connection.py` called
+   `os.makedirs()` and then connected bare, so a mistyped `SPOT_DB_PATH`
+   created a whole directory tree and an empty database — in the one file
+   whose entire job is making connections consistent, and in the one file a
+   reader would trust without checking. It was carried verbatim from the
+   source system, by an extraction that documented the bug in this very
+   list. **Three ways of stating a rule are not three enforcements of it.**
+
+   The shape it now has, and the shape to copy:
+
+   - **Creation is opt-in.** `connection.connect()` takes `create=False` by
+     default; a missing file raises `FileNotFoundError` naming the path, and
+     the connection is opened `mode=rw` so SQLite refuses independently of
+     our check.
+   - **Exactly one call site passes `create=True`** — `SpotBarWriter`, the
+     collector's own write path, whose first run legitimately has no
+     database. It says so at the call site.
+   - **The marker convention.** A deliberate create carries a
+     `# sqlite-create-ok: <reason>` comment on the connect line or in the
+     comment block immediately above it. It is one line, it makes intent
+     reviewable, and it is greppable. **Never put the marker on a connection
+     that is merely safe** — a `mode=ro` reader annotated as a deliberate
+     create is worse than an unmarked bug, because the next reader believes
+     the label. That mistake was made once by a checker pointed at this
+     repo, and it is the reason this sentence is here.
+
 5. **`render_candles(bars, out_path, title) -> Path` is the entire chart
    interface.** Nothing outside `src/render/chart.py` may import anything
    else from that module. If you replace matplotlib with something else,

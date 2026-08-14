@@ -49,8 +49,12 @@ class SpotBarWriter:
         journal_size_limit_bytes: "int | None" = db_connection.DEFAULT_JOURNAL_SIZE_LIMIT_BYTES,
     ):
         self.db_path = db_path
+        # The one create=True in this repo: the collector's own write path,
+        # whose first run has no database yet. Every other connection refuses
+        # to create -- see src/db/connection.py for why and for the
+        # `sqlite-create-ok:` marker convention.
         self.conn = db_connection.connect(
-            db_path, timeout=30.0, check_same_thread=False,
+            db_path, create=True, timeout=30.0, check_same_thread=False,
             busy_timeout_ms=busy_timeout_ms,
             journal_size_limit_bytes=journal_size_limit_bytes,
         )

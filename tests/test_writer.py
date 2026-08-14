@@ -21,7 +21,11 @@ def test_upsert_inserts_new_bars(tmp_path):
         writer.close()
 
     assert counts == {"inserted": 10, "updated": 0, "unchanged": 0}
-    conn = sqlite3.connect(db_path)
+    # A read, not a create: mode=ro so SQLite itself refuses to bring the
+    # file into existence if the writer above somehow never made it --
+    # otherwise this assertion reads a 0-byte database and reports
+    # "0 rows" as a test failure that looks like a logic bug.
+    conn = sqlite3.connect("file:%s?mode=ro" % db_path, uri=True)
     assert conn.execute("SELECT COUNT(*) FROM spot_bars").fetchone()[0] == 10
     conn.close()
 
@@ -57,7 +61,11 @@ def test_a_changed_bar_is_updated_not_duplicated(tmp_path):
         writer.close()
 
     assert counts == {"inserted": 0, "updated": 1, "unchanged": 9}
-    conn = sqlite3.connect(db_path)
+    # A read, not a create: mode=ro so SQLite itself refuses to bring the
+    # file into existence if the writer above somehow never made it --
+    # otherwise this assertion reads a 0-byte database and reports
+    # "0 rows" as a test failure that looks like a logic bug.
+    conn = sqlite3.connect("file:%s?mode=ro" % db_path, uri=True)
     assert conn.execute("SELECT COUNT(*) FROM spot_bars").fetchone()[0] == 10  # still 10 rows, not 11
     conn.close()
 

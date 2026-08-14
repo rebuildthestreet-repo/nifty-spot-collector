@@ -23,6 +23,8 @@ def test_trading_calendar_table_overrides_the_static_fallback(tmp_path, monkeypa
     # A DB row takes priority over both the weekday check and NSE_HOLIDAYS --
     # e.g. an exchange-declared one-off trading Saturday.
     db_path = tmp_path / "spot.db"
+    # sqlite-create-ok: this fixture builds the calendar database it is
+    # about to test against, in a pytest tmp_path.
     conn = sqlite3.connect(str(db_path))
     conn.execute(
         "CREATE TABLE trading_calendar (exchange TEXT, trade_date TEXT, session_type TEXT)"
