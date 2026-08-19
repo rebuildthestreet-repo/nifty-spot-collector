@@ -1,4 +1,4 @@
-# nifty-spot-collector -- Docker.
+# nifty-spot-intraday-collector -- Docker.
 #
 # Setup, once:
 #   cp .env.example .env
@@ -44,7 +44,7 @@
 services:
   collector:
     build: .
-    image: nifty-spot-collector:latest
+    image: nifty-spot-intraday-collector:latest
     env_file:
       - .env
     environment:
@@ -62,11 +62,11 @@ services:
       # at all, so this file behaves identically on all three.
       - nifty_data:/data
       # Matches CREDENTIALS_PATH's directory in src/upstox/session.py
-      # (~/.config/nifty-spot-collector/, under the fixed HOME the
+      # (~/.config/nifty-spot-intraday-collector/, under the fixed HOME the
       # Dockerfile sets) -- so the token `auth` saves survives a
       # `docker compose down` / rebuild instead of vanishing with the
       # container's writable layer.
-      - nifty_credentials:/home/collector/.config/nifty-spot-collector
+      - nifty_credentials:/home/collector/.config/nifty-spot-intraday-collector
     # $$ (not $), twice, both places: Compose interpolates $VAR itself
     # against the *host's* environment/.env before this string ever
     # reaches the container -- a bare $ec here silently became Compose's

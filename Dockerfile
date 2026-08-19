@@ -1,4 +1,4 @@
-# nifty-spot-collector -- the Docker route.
+# nifty-spot-intraday-collector -- the Docker route.
 #
 # Pinned base image, not `python:3.12-slim` or `:latest`: a floating tag can
 # change what Debian release (and what package versions) you get on a
@@ -46,7 +46,7 @@ RUN chmod +x verify.sh
 # docker-compose.yml mounts a named volume at exactly this path so the token
 # survives a container recreate.
 RUN useradd --create-home --home-dir /home/collector --uid 1000 collector \
-    && mkdir -p /data /home/collector/.config/nifty-spot-collector \
+    && mkdir -p /data /home/collector/.config/nifty-spot-intraday-collector \
     && chown -R collector:collector /data /home/collector /app
 
 USER collector

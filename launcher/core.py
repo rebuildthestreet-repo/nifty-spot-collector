@@ -50,7 +50,7 @@ VENV_PYTHON_CANDIDATES = (
 )
 
 # Mirrors src/upstox/session.py::CREDENTIALS_PATH -- see module docstring.
-CREDENTIALS_PATH = Path.home() / ".config" / "nifty-spot-collector" / "upstox_credentials.json"
+CREDENTIALS_PATH = Path.home() / ".config" / "nifty-spot-intraday-collector" / "upstox_credentials.json"
 
 # The five variables this repo reads, and the ones the launcher's
 # Credentials/Connect cards can write. Order here is display order.

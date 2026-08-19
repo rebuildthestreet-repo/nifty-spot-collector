@@ -1,4 +1,4 @@
-# nifty-spot-collector dependencies -- fully pinned.
+# nifty-spot-intraday-collector dependencies -- fully pinned.
 #
 # Verified working as of August 2026. Two different provenances, so read the
 # right justification when you bump one:

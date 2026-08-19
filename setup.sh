@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# nifty-spot-collector -- native install.
+# nifty-spot-intraday-collector -- native install.
 #
 # Detects prerequisites and instructs; NEVER installs a system package
 # itself. If something's missing, this script prints the exact command for
@@ -54,7 +54,7 @@ venv_bin_dir() {
     fi
 }
 
-echo "nifty-spot-collector setup"
+echo "nifty-spot-intraday-collector setup"
 echo "==========================="
 echo
 

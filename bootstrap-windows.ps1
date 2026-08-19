@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    nifty-spot-collector -- one-shot Windows prerequisite installer.
+    nifty-spot-intraday-collector -- one-shot Windows prerequisite installer.
 
 .DESCRIPTION
     Installs everything this repo needs on a Windows machine where NOTHING
@@ -91,7 +91,7 @@ if (-not $isAdmin) {
     exit 1
 }
 
-Write-Host "nifty-spot-collector -- Windows prerequisite installer"
+Write-Host "nifty-spot-intraday-collector -- Windows prerequisite installer"
 Write-Host "======================================================"
 
 # ---------------------------------------------------------------------------
@@ -238,8 +238,8 @@ Write-Host "  2. Open a NEW terminal. This window's PATH is stale and will not"
 Write-Host "     see git, python, or sqlite3 even though they are now installed."
 Write-Host ""
 Write-Host "  3. Clone the repo and start the launcher:"
-Write-Host "       git clone https://github.com/rebuildthestreet-repo/nifty-spot-collector.git"
-Write-Host "       cd nifty-spot-collector"
+Write-Host "       git clone https://github.com/rebuildthestreet-repo/nifty-spot-intraday-collector.git"
+Write-Host "       cd nifty-spot-intraday-collector"
 Write-Host "       python launcher\server.py"
 Write-Host ""
 Write-Host "     The launcher takes it from there -- dependencies, credentials,"

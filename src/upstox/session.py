@@ -29,7 +29,7 @@ convenience this repo is choosing not to build.
 
 Credential resolution order for the ACCESS TOKEN: UPSTOX_ACCESS_TOKEN env var
 first, then a JSON file under this project's own config directory
-(~/.config/nifty-spot-collector/, not the source's ~/.config/marketmaster/,
+(~/.config/nifty-spot-intraday-collector/, not the source's ~/.config/marketmaster/,
 so installing this repo can never read or collide with credentials written
 by the system it was extracted from).
 
@@ -53,7 +53,7 @@ import upstox_client
 
 from src.config import resolve_upstox_token
 
-CREDENTIALS_PATH = Path.home() / ".config" / "nifty-spot-collector" / "upstox_credentials.json"
+CREDENTIALS_PATH = Path.home() / ".config" / "nifty-spot-intraday-collector" / "upstox_credentials.json"
 AUTH_DIALOG_URL = "https://api.upstox.com/v2/login/authorization/dialog"
 AUTH_TOKEN_URL = "https://api.upstox.com/v2/login/authorization/token"
 

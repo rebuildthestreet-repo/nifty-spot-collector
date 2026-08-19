@@ -1,4 +1,4 @@
-# nifty-spot-collector
+# nifty-spot-intraday-collector
 
 **Collect intraday (minute-by-minute) price data for the NIFTY index and store it in a database on your own machine. For intraday analysis. View it on a chart with my-view-chart.**
 
@@ -53,7 +53,7 @@ installs them all for you.
 
    ```powershell
    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
-   irm https://raw.githubusercontent.com/rebuildthestreet-repo/nifty-spot-collector/main/bootstrap-windows.ps1 -OutFile bootstrap-windows.ps1
+   irm https://raw.githubusercontent.com/rebuildthestreet-repo/nifty-spot-intraday-collector/main/bootstrap-windows.ps1 -OutFile bootstrap-windows.ps1
    .\bootstrap-windows.ps1
    ```
 
@@ -96,8 +96,8 @@ if anything's missing along with the exact command for your distribution.
 In your terminal (**Git Bash** on Windows), run:
 
 ```bash
-git clone https://github.com/rebuildthestreet-repo/nifty-spot-collector.git
-cd nifty-spot-collector
+git clone https://github.com/rebuildthestreet-repo/nifty-spot-intraday-collector.git
+cd nifty-spot-intraday-collector
 ```
 
 ---

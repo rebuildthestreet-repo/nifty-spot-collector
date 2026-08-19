@@ -1,5 +1,5 @@
 """
-nifty-spot-collector CLI. Three verbs -- this repo does two things, plus the
+nifty-spot-intraday-collector CLI. Three verbs -- this repo does two things, plus the
 one thing needed to get a first-time user able to do them at all.
 
   nifty-spot auth    [--redirect-uri URL]

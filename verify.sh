@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# nifty-spot-collector -- the highest-value file in this repo.
+# nifty-spot-intraday-collector -- the highest-value file in this repo.
 #
 # The failure mode this exists to catch is not "the script errored". It's
 # "it seemed to work but nothing happened" -- specifically, the exact thing
@@ -88,7 +88,7 @@ if [ -z "${PY:-}" ]; then
     exit 1
 fi
 
-echo "nifty-spot-collector verify"
+echo "nifty-spot-intraday-collector verify"
 echo "============================"
 echo "Using interpreter: ${PY}"
 echo
@@ -170,7 +170,7 @@ else:
 def _resolve_token_including_saved_file():
     # resolve_upstox_token() alone only checks UPSTOX_ACCESS_TOKEN -- the
     # env var. It does NOT check the credentials file `auth` actually
-    # saves to (~/.config/nifty-spot-collector/upstox_credentials.json),
+    # saves to (~/.config/nifty-spot-intraday-collector/upstox_credentials.json),
     # even though this check's own label says "or saved credential" and
     # src/upstox/session.py::_load_token() -- what `collect` actually
     # calls -- checks both. Confirmed as a real false-negative 2026-08-09:
@@ -361,7 +361,7 @@ print()
 print("=" * 70)
 print("Paste everything below this line into a GitHub issue:")
 print("=" * 70)
-print(f"nifty-spot-collector verify.sh -- {datetime.now().isoformat(timespec='seconds')}")
+print(f"nifty-spot-intraday-collector verify.sh -- {datetime.now().isoformat(timespec='seconds')}")
 print(f"OS: {platform.platform()}")
 print(f"Python: {platform.python_version()} ({sys.executable})")
 for status, label, detail in results:

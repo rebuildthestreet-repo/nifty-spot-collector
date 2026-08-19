@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-nifty-spot-collector launcher -- a local, browser-based front end for the
+nifty-spot-intraday-collector launcher -- a local, browser-based front end for the
 existing `nifty-spot` CLI. Stdlib only; binds 127.0.0.1 only; shells out to
 the CLI as a subprocess and never imports its module code. See
 docs/LAUNCHER.md for the full design and docs/CREDENTIALS.md for the
@@ -35,7 +35,7 @@ STATE_CHANGING_PATHS = {"/api/env", "/api/setup/stream", "/api/collect/stream"}
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 CALLBACK_DONE_PAGE = """<!doctype html><meta charset="utf-8">
-<title>nifty-spot-collector</title>
+<title>nifty-spot-intraday-collector</title>
 <body style="font: 16px system-ui, sans-serif; max-width: 34em; margin: 4em auto; color: #222;">
 <h1>Login captured</h1>
 <p>You can close this tab and return to the launcher tab, where the result
@@ -43,7 +43,7 @@ should already be showing.</p>
 </body>"""
 
 CALLBACK_ERROR_PAGE = """<!doctype html><meta charset="utf-8">
-<title>nifty-spot-collector</title>
+<title>nifty-spot-intraday-collector</title>
 <body style="font: 16px system-ui, sans-serif; max-width: 34em; margin: 4em auto; color: #222;">
 <h1>Login did not complete</h1>
 <p>{error}</p>

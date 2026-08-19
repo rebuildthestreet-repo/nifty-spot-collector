@@ -314,7 +314,7 @@ The launcher's **Connect** button runs exactly this. Read from
    > [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 
 6. The token is shape-checked, then saved to
-   `~/.config/nifty-spot-collector/upstox_credentials.json` with `0600`
+   `~/.config/nifty-spot-intraday-collector/upstox_credentials.json` with `0600`
    permissions, written atomically.
 7. It confirms, and reminds you the token expires tomorrow morning.
 
