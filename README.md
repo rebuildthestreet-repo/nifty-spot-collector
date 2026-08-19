@@ -1,5 +1,7 @@
 # nifty-spot-collector
 
+**Collect intraday (minute-by-minute) price data for the NIFTY index and store it in a database on your own machine. For intraday analysis. View it on a chart with my-view-chart.**
+
 **Build your own database of NIFTY 50 price history, and chart it.**
 
 You pick a date range. This downloads NIFTY 50 minute-by-minute prices for
